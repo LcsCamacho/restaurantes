@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+//id, nome, telefone, email, senha
+model User {
+  id        String      @id @default(cuid())
+  email     String      @unique
+  nome      String
+  telefone  String
+  senha     String
+  Avaliacao Avaliacao[]
+}
+
+model Categoria {
+  id          String        @id @default(cuid())
+  nome        String
+  Restaurante Restaurante[]
+}
+
+//id, nome, categoriaId, endereco
+model Restaurante {
+  id          String      @id @default(cuid())
+  nome        String
+  categoriaId String
+  endereco    String
+  categoria   Categoria   @relation(fields: [categoriaId], references: [id])
+  Cardapio    Cardapio[]
+  Avaliacao   Avaliacao[]
+}
+
+//id, restauranteId, descricao, valor
+model Cardapio {
+  id            String      @id @default(cuid())
+  restauranteId String
+  descricao     String
+  valor         Float
+  restaurante   Restaurante @relation(fields: [restauranteId], references: [id])
+}
+
+//restauranteId, clienteId, data, nota, descricao
+model Avaliacao {
+  id            String      @id @default(cuid())
+  restauranteId String
+  clienteId     String
+  data          DateTime    @default(now())
+  nota          Int
+  descricao     String
+  restaurante   Restaurante @relation(fields: [restauranteId], references: [id])
+  cliente       User        @relation(fields: [clienteId], references: [id])
+}
