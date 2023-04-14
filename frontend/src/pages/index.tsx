@@ -1,14 +1,24 @@
+import { setLocalStorage, getLocalStorage, removeLocalStorage } from '../utils/localStorage';
 import FormCadastro from '@/components/form-cadastro'
 import { useAxios } from '@/hooks/useAxios'
 import Head from 'next/head'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router';
-
+import { useAtom } from 'jotai';
+import { userAtom } from '@/jotai/atoms/userAtom';
 
 export default function Home() {
+  const [user, setUser] = useAtom(userAtom);
   const [showModalCadastro, setShowModalCadastro] = useState(false)
   const router = useRouter();
   const { api } = useAxios();
+
+  useEffect(() => {
+    const user = getLocalStorage('user-restaurantes');
+    if (user) {
+      router.push('/home');
+    }
+  }, [router])
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -21,6 +31,8 @@ export default function Home() {
     api.post('/login', usuario)
       .then((response) => {
         console.log(response);
+        localStorage.setItem('user-restaurantes', JSON.stringify(response.data));
+        setUser(response.data);
         router.push('/home');
       })
       .catch((error) => {
@@ -80,13 +92,13 @@ export default function Home() {
               </button>
             </div>
           </div>
-        </form>
-        <p className="mt-4">
+        <p className="mt-4 text-white">
           Não tem uma conta?{' '}
           <span onClick={() => setShowModalCadastro(true)}>
             Cadastre-se
           </span>
         </p>
+        </form>
       </main>
       <FormCadastro showModal={showModalCadastro} onRequestClose={() => setShowModalCadastro(!showModalCadastro)} />
     </>
