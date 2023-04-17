@@ -3,7 +3,8 @@ import axios from 'axios';
 import { Restaurante } from '../home';
 import { useEffect, useState } from 'react';
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+    const {params} = ctx
     let id = ''
     if (params) {
         id = params.id as string

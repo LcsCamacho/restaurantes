@@ -1,11 +1,9 @@
-import { userAtom } from '@/jotai/atoms/userAtom';
-import { useAtom } from 'jotai';
 import { setLocalStorage, getLocalStorage, removeLocalStorage } from '../../utils/localStorage';
 import { useAxios } from '@/hooks/useAxios';
 import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import router from 'next/router';
-
+import { User, useUserStore } from '@/features/zustand/userStore';
 
 export type Categoria = {
     id: string,
@@ -36,9 +34,25 @@ export type Restaurante = {
 
 export default function Home() {
     const { api } = useAxios();
-    const [user] = useAtom(userAtom);
-    const userFromLocalStorage = getLocalStorage('user-restaurantes');
-    const [restaurantes, setRestaurantes] = useState<any[]>([]);
+    const [userState, setUserState] = useState<User>({} as User);
+    const [restaurantes, setRestaurantes] = useState<Restaurante[]>([]);
+    const user = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
+
+    useEffect(() => {
+        if (!user) {
+            router.push('/');
+        }
+    }, [user]);
+
+    const logout = () => {
+        setUser(null);
+        router.push('/');
+    }
+
+    useEffect(() => {
+        setUserState(user as User)
+    }, [user]);
 
     async function fetchCategorias(): Promise<Categoria[]> {
         const response = await api.get('/categoria');
@@ -50,7 +64,7 @@ export default function Home() {
         return response.data;
     }
 
-    const { data, refetch, error, isLoading } = useQuery('restaurantes-categorias', async () => {
+    const { data, error, isLoading } = useQuery('restaurantes-categorias', async () => {
         const [categorias, restaurantes] = await Promise.all([fetchCategorias(), fetchRestaurante()]);
 
         return { categorias, restaurantes };
@@ -74,7 +88,7 @@ export default function Home() {
                 <span>
                     Bem vindo {user?.nome}
                 </span>
-                <span className='text-md cursor-pointer hover:scale-110 p-3'>Logout</span>
+                <span className='text-md cursor-pointer hover:scale-110 p-3' onClick={logout}>Logout</span>
             </header>
 
             <main>

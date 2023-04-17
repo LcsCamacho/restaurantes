@@ -4,14 +4,13 @@ import { useAxios } from '@/hooks/useAxios'
 import Head from 'next/head'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router';
-import { useAtom } from 'jotai';
-import { userAtom } from '@/jotai/atoms/userAtom';
+import { useUserStore } from '@/features/zustand/userStore';
 
 export default function Home() {
-  const [user, setUser] = useAtom(userAtom);
   const [showModalCadastro, setShowModalCadastro] = useState(false)
   const router = useRouter();
   const { api } = useAxios();
+  const { setUser } = useUserStore();
 
   useEffect(() => {
     const user = getLocalStorage('user-restaurantes');
@@ -31,8 +30,8 @@ export default function Home() {
     api.post('/login', usuario)
       .then((response) => {
         console.log(response);
-        localStorage.setItem('user-restaurantes', JSON.stringify(response.data));
         setUser(response.data);
+        localStorage.setItem('user-restaurantes', JSON.stringify(response.data));
         router.push('/home');
       })
       .catch((error) => {
